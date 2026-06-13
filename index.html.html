@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Presión Neumáticos | JATRAINING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lime:#c8f000; --black:#0a0a0a; --card:#161616;
+    --card2:#1c1c1c; --border:#272727; --text:#e0e0e0;
+    --muted:#555; --warn:#f0a000; --danger:#e83b3b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{background:var(--black);color:var(--text);font-family:'Inter',sans-serif;
+    font-size:14px;min-height:100dvh;padding-bottom:52px;-webkit-font-smoothing:antialiased}
+
+  /* HEADER */
+  .hdr{padding:20px 18px 0;background:var(--black);position:sticky;top:0;z-index:20}
+  .brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+    letter-spacing:.2em;color:var(--lime);text-transform:uppercase;margin-bottom:2px}
+  .htitle{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;
+    line-height:1;text-transform:uppercase;color:#fff}
+  .htitle em{color:var(--lime);font-style:normal}
+  .hline{margin-top:11px;height:2px;background:var(--lime);position:relative}
+  .hline::after{content:'';position:absolute;top:3px;left:0;right:0;height:1px;
+    background:var(--lime);opacity:.25}
+
+  /* BIKE TYPE TABS */
+  .bike-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
+    padding:14px 18px 0}
+  .bike-tab{background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:12px 6px 10px;text-align:center;cursor:pointer;
+    transition:all .2s;user-select:none}
+  .bike-tab .bicon{font-size:22px;display:block;margin-bottom:5px}
+  .bike-tab .bname{font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .bike-tab.sel{background:rgba(200,240,0,.1);border-color:var(--lime)}
+  .bike-tab.sel .bname{color:var(--lime)}
+
+  /* RESULT BOXES */
+  .rp{padding:14px 18px 0;display:flex;gap:10px}
+  .rbox{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:13px 10px 11px;text-align:center;position:relative;overflow:hidden;
+    transition:border-color .3s}
+  .rbox.on{border-color:rgba(200,240,0,.45)}
+  .rbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:var(--lime);opacity:.2;transition:opacity .3s}
+  .rbox.on::before{opacity:1}
+  .rlabel{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .rval{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:42px;
+    line-height:1;color:var(--lime);transition:color .3s;letter-spacing:-.02em}
+  .rval.empty{color:#222}
+  .runit{font-size:10px;color:var(--muted);margin-top:2px}
+  .ralt{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
+    color:rgba(200,240,0,.5);margin-top:2px}
+
+  /* GAUGE */
+  .grow{padding:10px 18px 0;display:flex;align-items:center;gap:10px}
+  .gwrap{position:relative;width:130px;height:70px;flex-shrink:0}
+  .gsvg{width:130px;height:70px}
+  .gmeta{flex:1;display:flex;flex-direction:column;gap:5px}
+  .mrow{display:flex;justify-content:space-between;font-size:11px;padding:5px 10px;
+    background:var(--card);border-radius:6px;border:1px solid var(--border)}
+  .mk{color:var(--muted)}
+  .mv{color:var(--text);font-weight:600}
+  .mv.lime{color:var(--lime)}
+
+  /* ALERT */
+  .alert{margin:10px 18px 0;padding:9px 12px;border-radius:8px;font-size:11px;
+    font-weight:500;line-height:1.45;display:flex;gap:7px;align-items:flex-start;transition:all .3s}
+  .aicon{font-size:13px;flex-shrink:0;margin-top:1px}
+  .alert.info {background:rgba(200,240,0,.07);border:1px solid rgba(200,240,0,.2);color:var(--lime)}
+  .alert.warn {background:rgba(240,160,0,.07);border:1px solid rgba(240,160,0,.2);color:var(--warn)}
+  .alert.danger{background:rgba(232,59,59,.07);border:1px solid rgba(232,59,59,.2);color:var(--danger)}
+
+  /* UNIT TOGGLE */
+  .utog{display:flex;margin:10px 18px 0;background:var(--card);border-radius:8px;
+    border:1px solid var(--border);overflow:hidden}
+  .ubtn{flex:1;padding:8px;text-align:center;cursor:pointer;font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--muted);transition:all .2s}
+  .ubtn.sel{background:rgba(200,240,0,.12);color:var(--lime)}
+
+  /* SECTION */
+  .sec{padding:14px 18px 0}
+  .slabel{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--lime);margin-bottom:10px;
+    display:flex;align-items:center;gap:8px}
+  .slabel::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  /* SLIDER */
+  .scard{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:13px 14px;margin-bottom:8px}
+  .shead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .sname{font-size:12px;font-weight:500;color:var(--text)}
+  .sval{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--lime)}
+  .sval sup{font-size:11px;font-weight:400;color:var(--muted);font-family:'Inter',sans-serif}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;
+    background:var(--border);border-radius:2px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+    border-radius:50%;background:var(--lime);cursor:pointer;
+    box-shadow:0 0 0 4px rgba(200,240,0,.15)}
+  .sticks{display:flex;justify-content:space-between;margin-top:4px;
+    font-size:9px;color:var(--muted)}
+
+  /* TOGGLE GRID */
+  .tg{display:grid;gap:6px}
+  .tg.c2{grid-template-columns:1fr 1fr}
+  .tg.c3{grid-template-columns:1fr 1fr 1fr}
+  .tb{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:11px 8px;text-align:center;cursor:pointer;
+    transition:all .18s;user-select:none}
+  .tb .ic{font-size:18px;display:block;margin-bottom:4px}
+  .tb .lb{font-size:10px;font-weight:500;color:var(--muted);line-height:1.3}
+  .tb.sel{background:rgba(200,240,0,.1);border-color:var(--lime)}
+  .tb.sel .lb{color:var(--lime)}
+  .tb.dis{opacity:.3;pointer-events:none}
+
+  /* PILLS */
+  .pgrid{display:flex;flex-wrap:wrap;gap:5px}
+  .pill{background:var(--card);border:1px solid var(--border);border-radius:20px;
+    padding:6px 12px;cursor:pointer;transition:all .18s;user-select:none;
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;
+    color:var(--muted);white-space:nowrap}
+  .pill.sel{background:rgba(200,240,0,.12);border-color:var(--lime);color:var(--lime)}
+
+  /* HOOKLESS NOTE */
+  .hnote{display:none;margin-top:8px;background:rgba(240,160,0,.07);
+    border:1px solid rgba(240,160,0,.2);border-radius:7px;padding:8px 10px;
+    font-size:11px;color:var(--warn);line-height:1.5}
+  .hnote.show{display:block}
+
+  /* DETAIL TABLE */
+  .dtable{margin:14px 18px 0;background:var(--card);border:1px solid var(--border);
+    border-radius:12px;overflow:hidden}
+  .drow{display:flex;justify-content:space-between;align-items:center;
+    padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px}
+  .drow:last-child{border-bottom:none}
+  .dk{color:var(--muted)}
+  .dv{color:var(--text);font-weight:600}
+  .dv.lime{color:var(--lime)}
+
+  /* METHOD NOTE */
+  .mnote{margin:12px 18px 0;background:var(--card2);border:1px solid var(--border);
+    border-radius:10px;padding:11px 13px;font-size:10px;color:var(--muted);line-height:1.6}
+  .mnote strong{color:rgba(200,240,0,.65)}
+
+  /* FOOTER */
+  .foot{margin:16px 18px 0;border-top:1px solid var(--border);padding-top:12px;
+    font-size:10px;color:var(--muted);text-align:center;line-height:1.7}
+  .foot span{color:var(--lime)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="brand">JATRAINING</div>
+  <div class="htitle">PRESIÓN <em>NEUMÁTICOS</em></div>
+  <div class="hline"></div>
+</div>
+
+<!-- TIPO DE BICI -->
+<div class="bike-tabs">
+  <div class="bike-tab sel" id="btRoad"   onclick="setBike('road')">
+    <span class="bicon">🚴</span><span class="bname">Carretera</span>
+  </div>
+  <div class="bike-tab" id="btGravel" onclick="setBike('gravel')">
+    <span class="bicon">🪨</span><span class="bname">Gravel</span>
+  </div>
+  <div class="bike-tab" id="btMTB"    onclick="setBike('mtb')">
+    <span class="bicon">⛰️</span><span class="bname">MTB</span>
+  </div>
+</div>
+
+<!-- RESULTADOS -->
+<div class="rp">
+  <div class="rbox" id="boxF">
+    <div class="rlabel">Delantera</div>
+    <div class="rval empty" id="valF">—</div>
+    <div class="ralt" id="altF">— bar</div>
+    <div class="runit" id="unitF">PSI</div>
+  </div>
+  <div class="rbox" id="boxR">
+    <div class="rlabel">Trasera</div>
+    <div class="rval empty" id="valR">—</div>
+    <div class="ralt" id="altR">— bar</div>
+    <div class="runit" id="unitR">PSI</div>
+  </div>
+</div>
+
+<!-- GAUGE + META -->
+<div class="grow">
+  <div class="gwrap">
+    <svg class="gsvg" viewBox="0 0 130 70">
+      <defs>
+        <linearGradient id="grd" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stop-color="#e83b3b"/>
+          <stop offset="35%"  stop-color="#f0a000"/>
+          <stop offset="65%"  stop-color="#c8f000"/>
+          <stop offset="100%" stop-color="#00d0ff"/>
+        </linearGradient>
+      </defs>
+      <path d="M10 65 A55 55 0 0 1 120 65" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+      <path id="garc" d="M10 65 A55 55 0 0 1 120 65" fill="none" stroke="url(#grd)" stroke-width="6"
+        stroke-linecap="round" stroke-dasharray="173" stroke-dashoffset="173"/>
+      <line id="gneedle" x1="65" y1="65" x2="65" y2="18" stroke="#c8f000" stroke-width="2"
+        stroke-linecap="round"
+        style="transform-origin:65px 65px;transform:rotate(-90deg);transition:transform .6s cubic-bezier(.4,0,.2,1)"/>
+      <circle cx="65" cy="65" r="4" fill="#c8f000"/>
+      <circle cx="65" cy="65" r="2" fill="#0a0a0a"/>
+      <text id="gmin" x="7"   y="66" font-family="Inter" font-size="7" fill="#444" text-anchor="middle">10</text>
+      <text         x="37"  y="22" font-family="Inter" font-size="7" fill="#444" text-anchor="middle" id="gq1">40</text>
+      <text         x="65"  y="13" font-family="Inter" font-size="7" fill="#444" text-anchor="middle" id="gmid">70</text>
+      <text         x="93"  y="22" font-family="Inter" font-size="7" fill="#444" text-anchor="middle" id="gq3">90</text>
+      <text id="gmax" x="122" y="66" font-family="Inter" font-size="7" fill="#444" text-anchor="middle">120</text>
+    </svg>
+  </div>
+  <div class="gmeta">
+    <div class="mrow"><span class="mk">Peso sistema</span>  <span class="mv" id="mTotal">—</span></div>
+    <div class="mrow"><span class="mk">Ancho efectivo</span><span class="mv lime" id="mEff">—</span></div>
+    <div class="mrow"><span class="mk">Δ del./tras.</span> <span class="mv" id="mDelta">—</span></div>
+  </div>
+</div>
+
+<!-- ALERT -->
+<div class="alert info" id="alertBox">
+  <span class="aicon">ℹ️</span>
+  <span id="alertTxt">Selecciona tipo de bici y completa los datos.</span>
+</div>
+
+<!-- PSI / BAR -->
+<div class="utog">
+  <div class="ubtn sel" id="btnPSI" onclick="setUnit('psi')">PSI</div>
+  <div class="ubtn"     id="btnBAR" onclick="setUnit('bar')">BAR</div>
+</div>
+
+<!-- PESOS -->
+<div class="sec">
+  <div class="slabel">Peso del sistema</div>
+  <div class="scard">
+    <div class="shead">
+      <span class="sname">Ciclista</span>
+      <span class="sval" id="dRider">70 <sup>kg</sup></span>
+    </div>
+    <input type="range" id="sRider" min="45" max="120" value="70" step="1">
+    <div class="sticks"><span>45</span><span>70</span><span>90</span><span>120 kg</span></div>
+  </div>
+  <div class="scard">
+    <div class="shead">
+      <span class="sname">Bici + equipamiento</span>
+      <span class="sval" id="dBike">8 <sup>kg</sup></span>
+    </div>
+    <input type="range" id="sBike" min="5" max="18" value="8" step="0.5">
+    <div class="sticks"><span>5</span><span>8</span><span>12</span><span>18 kg</span></div>
+  </div>
+</div>
+
+<!-- ANCHURA CUBIERTA -->
+<div class="sec">
+  <div class="slabel" id="twLabel">Anchura del neumático</div>
+  <div class="pgrid" id="tireGrid"></div>
+</div>
+
+<!-- IW LLANTA -->
+<div class="sec" id="iwSection" style="margin-top:12px">
+  <div class="slabel">Anchura interior de llanta (IW)</div>
+  <div class="pgrid" id="iwGrid"></div>
+</div>
+
+<!-- SISTEMA -->
+<div class="sec" style="margin-top:12px">
+  <div class="slabel">Sistema de montaje</div>
+  <div class="tg c2">
+    <div class="tb sel" id="bTL"  onclick="setTog('system','tubeless')"><span class="ic">🔵</span><span class="lb">Tubeless</span></div>
+    <div class="tb"    id="bCLN" onclick="setTog('system','clincher')"><span class="ic">⭕</span><span class="lb">Cámara + cubierta</span></div>
+  </div>
+</div>
+
+<!-- LLANTA HOOKLESS -->
+<div class="sec" style="margin-top:10px">
+  <div class="slabel">Tipo de llanta</div>
+  <div class="tg c2">
+    <div class="tb sel" id="bHook" onclick="setTog('hook','hooked')"   ><span class="ic">🪝</span><span class="lb">Con gancho (hooked)</span></div>
+    <div class="tb"    id="bHL"   onclick="setTog('hook','hookless')"><span class="ic">🚫</span><span class="lb">Sin gancho (hookless)</span></div>
+  </div>
+  <div class="hnote" id="hnote">
+    ⚠️ <strong>Hookless:</strong> límite ETRTO 72.5 PSI / 5 bar. Solo compatible con tubeless. Verifica con el fabricante.
+  </div>
+</div>
+
+<!-- TERRENO -->
+<div class="sec" style="margin-top:10px">
+  <div class="slabel" id="surfLabel">Tipo de terreno</div>
+  <div class="tg c3" id="surfGrid">
+    <!-- llenado dinámico por JS -->
+  </div>
+</div>
+
+<!-- CONDICIONES -->
+<div class="sec" style="margin-top:10px">
+  <div class="slabel">Condiciones</div>
+  <div class="tg c2">
+    <div class="tb sel" id="bDry" onclick="setTog('wet','dry')"><span class="ic">☀️</span><span class="lb">Seco</span></div>
+    <div class="tb"    id="bWet" onclick="setTog('wet','wet')"><span class="ic">🌧️</span><span class="lb">Mojado</span></div>
+  </div>
+</div>
+
+<!-- TABLA DETALLE -->
+<div class="dtable">
+  <div class="drow"><span class="dk">Presión base trasera</span>  <span class="dv lime" id="dBase">—</span></div>
+  <div class="drow"><span class="dk">Ancho efectivo montado</span><span class="dv" id="dEffW">—</span></div>
+  <div class="drow"><span class="dk">Adj. sistema montaje</span>  <span class="dv" id="dSys">—</span></div>
+  <div class="drow"><span class="dk">Adj. terreno</span>          <span class="dv" id="dTerr">—</span></div>
+  <div class="drow"><span class="dk">Adj. lluvia</span>           <span class="dv" id="dWetV">—</span></div>
+  <div class="drow"><span class="dk">Δ del. vs. tras.</span>      <span class="dv" id="dDelta">—</span></div>
+</div>
+
+<div class="mnote">
+  Motor calibrado con metodología <strong>Vittoria + SILCA</strong> por disciplina:<br>
+  Carretera K=26.34 · Gravel K=20.42 · MTB K=14.89 (fórmula P=K×kg<sup>0.685</sup>/mm<sup>0.585</sup>)<br>
+  Validado: 70+8kg 28mm TL → <strong>66/69 PSI</strong> · 75kg 2.4" MTB TL → <strong>22/23 PSI</strong> · 65+9kg 40mm gravel TL → <strong>38/40 PSI</strong>
+</div>
+
+<div class="foot">
+  Punto de partida — ajusta ±2–3 PSI según sensación de rodadura.<br>
+  <span>JATRAINING</span> — josearribastraining.es
+</div>
+
+<script>
+// ── CONFIG POR DISCIPLINA ─────────────────────────────────────────
+const BIKES = {
+  road: {
+    K: 26.34, label: 'Carretera',
+    tireWidths: [23,25,26,28,30,32],
+    tireUnit: 'mm', defaultTW: 28, defaultIW: 19,
+    iwWidths: [13,15,17,19,21,23,25,28],
+    surfaces: [
+      {id:'smooth', ic:'🛣️', lb:'Liso',    adj:0},
+      {id:'rough',  ic:'🪨', lb:'Pavé/Rugoso', adj:-7},
+      {id:'mixed',  ic:'🔀', lb:'Mixto',   adj:-3.5},
+    ],
+    surfDefault: 'smooth',
+    tubelessAdj: -5,
+    frontRatio: 0.955,  // rear * 0.955
+    gaugeMin: 30, gaugeMax: 120,
+    minPsi: 28,
+    hooklessMax: 72.5,
+  },
+  gravel: {
+    K: 20.42, label: 'Gravel',
+    tireWidths: [35,38,40,42,45,47,50],
+    tireUnit: 'mm', defaultTW: 40, defaultIW: 21,
+    iwWidths: [17,19,21,23,25,28,30],
+    surfaces: [
+      {id:'gravel',  ic:'🪨', lb:'Gravel seco',  adj:0},
+      {id:'rough',   ic:'💨', lb:'Pista/Forestal', adj:-4},
+      {id:'road',    ic:'🛣️', lb:'Asfalto',     adj:+4},
+    ],
+    surfDefault: 'gravel',
+    tubelessAdj: -4,
+    frontRatio: 0.950,
+    gaugeMin: 20, gaugeMax: 80,
+    minPsi: 20,
+    hooklessMax: 72.5,
+  },
+  mtb: {
+    K: 14.89, label: 'MTB',
+    // anchos en pulgadas para MTB — convertimos a mm internamente
+    tireWidths: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.8],
+    tireUnit: 'in', defaultTW: 2.3, defaultIW: 30,
+    iwWidths: [25,27,28,30,32,35],
+    surfaces: [
+      {id:'xc',    ic:'🌲', lb:'XC / Hardpack', adj:+2},
+      {id:'trail', ic:'⛰️', lb:'Trail',         adj:0},
+      {id:'enduro',ic:'🤘', lb:'Enduro/DH',    adj:-3},
+    ],
+    surfDefault: 'trail',
+    tubelessAdj: -4,
+    frontRatio: 0.940,  // MTB: más diferencia del/tras para grip
+    gaugeMin: 10, gaugeMax: 50,
+    minPsi: 14,
+    hooklessMax: 72.5,
+  }
+};
+
+// ── ESTADO ────────────────────────────────────────────────────────
+const S = {
+  bikeType:'road', rider:70, bikeW:8,
+  tireW:28, iw:19,
+  system:'tubeless', hook:'hooked',
+  surface:'smooth', wet:'dry', unit:'psi'
+};
+
+// ── INIT GRIDS ────────────────────────────────────────────────────
+function buildTireGrid() {
+  const cfg = BIKES[S.bikeType];
+  const grid = document.getElementById('tireGrid');
+  grid.innerHTML = '';
+  cfg.tireWidths.forEach(v => {
+    const el = document.createElement('div');
+    el.className = 'pill' + (v === S.tireW ? ' sel' : '');
+    el.id = 'tw_' + String(v).replace('.','_');
+    el.textContent = cfg.tireUnit === 'in' ? v+'"' : v+' mm';
+    el.onclick = () => {
+      S.tireW = v;
+      grid.querySelectorAll('.pill').forEach(p => p.classList.remove('sel'));
+      el.classList.add('sel');
+      update();
+    };
+    grid.appendChild(el);
+  });
+  document.getElementById('twLabel').textContent =
+    cfg.tireUnit === 'in' ? 'Anchura del neumático (pulgadas)' : 'Anchura del neumático (mm)';
+}
+
+function buildIWGrid() {
+  const cfg = BIKES[S.bikeType];
+  const grid = document.getElementById('iwGrid');
+  grid.innerHTML = '';
+  cfg.iwWidths.forEach(v => {
+    const el = document.createElement('div');
+    el.className = 'pill' + (v === S.iw ? ' sel' : '');
+    el.id = 'iw_' + v;
+    el.textContent = v + ' mm';
+    el.onclick = () => {
+      S.iw = v;
+      grid.querySelectorAll('.pill').forEach(p => p.classList.remove('sel'));
+      el.classList.add('sel');
+      update();
+    };
+    grid.appendChild(el);
+  });
+}
+
+function buildSurfGrid() {
+  const cfg = BIKES[S.bikeType];
+  const grid = document.getElementById('surfGrid');
+  grid.innerHTML = '';
+  cfg.surfaces.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'tb' + (s.id === S.surface ? ' sel' : '');
+    el.id = 'surf_' + s.id;
+    el.innerHTML = `<span class="ic">${s.ic}</span><span class="lb">${s.lb}</span>`;
+    el.onclick = () => {
+      S.surface = s.id;
+      cfg.surfaces.forEach(ss => {
+        const b = document.getElementById('surf_'+ss.id);
+        if (b) b.classList.toggle('sel', ss.id === s.id);
+      });
+      update();
+    };
+    grid.appendChild(el);
+  });
+}
+
+function setBike(type) {
+  S.bikeType = type;
+  const cfg = BIKES[type];
+
+  // reset a defaults de la disciplina
+  S.tireW   = cfg.defaultTW;
+  S.iw      = cfg.defaultIW;
+  S.surface = cfg.surfDefault;
+
+  // tabs
+  const tabIds = { road:'btRoad', gravel:'btGravel', mtb:'btMTB' };
+  Object.entries(tabIds).forEach(([t, id]) =>
+    document.getElementById(id).classList.toggle('sel', t === type));
+
+  // IW: ocultar en MTB
+  document.getElementById('iwSection').style.display =
+    type === 'mtb' ? 'none' : '';
+
+  buildTireGrid();
+  buildIWGrid();
+  buildSurfGrid();
+
+  // escala del gauge
+  document.getElementById('gmin').textContent = cfg.gaugeMin;
+  document.getElementById('gq1').textContent  = Math.round(cfg.gaugeMin + (cfg.gaugeMax - cfg.gaugeMin) * 0.3);
+  document.getElementById('gmid').textContent = Math.round((cfg.gaugeMin + cfg.gaugeMax) / 2);
+  document.getElementById('gq3').textContent  = Math.round(cfg.gaugeMin + (cfg.gaugeMax - cfg.gaugeMin) * 0.75);
+  document.getElementById('gmax').textContent = cfg.gaugeMax;
+
+  update();
+}
+
+// ── SLIDERS ───────────────────────────────────────────────────────
+document.getElementById('sRider').addEventListener('input', function() {
+  S.rider = +this.value;
+  document.getElementById('dRider').innerHTML = this.value+' <sup>kg</sup>';
+  update();
+});
+document.getElementById('sBike').addEventListener('input', function() {
+  S.bikeW = +this.value;
+  document.getElementById('dBike').innerHTML = this.value+' <sup>kg</sup>';
+  update();
+});
+
+// ── TOGGLES ───────────────────────────────────────────────────────
+const TM = {
+  system:{tubeless:'bTL',   clincher:'bCLN'},
+  hook:  {hooked:'bHook',   hookless:'bHL'},
+  wet:   {dry:'bDry',       wet:'bWet'}
+};
+function setTog(group, val) {
+  S[group] = val;
+  Object.entries(TM[group]).forEach(([v,id]) =>
+    document.getElementById(id).classList.toggle('sel', v===val));
+  if (group==='hook') {
+    const hl = val==='hookless';
+    document.getElementById('hnote').classList.toggle('show', hl);
+    document.getElementById('bCLN').classList.toggle('dis', hl);
+    if (hl) { S.system='tubeless'; setTog('system','tubeless'); }
+  }
+  update();
+}
+
+// ── UNIT ──────────────────────────────────────────────────────────
+function setUnit(u) {
+  S.unit = u;
+  document.getElementById('btnPSI').classList.toggle('sel', u==='psi');
+  document.getElementById('btnBAR').classList.toggle('sel', u==='bar');
+  update();
+}
+
+// ── MOTOR DE CÁLCULO ──────────────────────────────────────────────
+// P_rear(PSI) = K × total_kg^0.685 / effWidth_mm^0.585
+// K específica por disciplina (Vittoria/SILCA calibrado)
+// IW corrige ancho montado: +0.3 mm por cada mm de IW sobre referencia
+// Front = Rear × frontRatio (Vittoria: ~4.5% menos del. en road, más en MTB)
+
+function calcPressure() {
+  const cfg = BIKES[S.bikeType];
+  const total = S.rider + S.bikeW;
+
+  // Convertir ancho a mm si MTB (pulgadas)
+  const nomW_mm = cfg.tireUnit === 'in' ? S.tireW * 25.4 : S.tireW;
+
+  // Ancho efectivo con corrección IW (MTB ignoramos IW)
+  const iwRef = 19;
+  const effW  = S.bikeType === 'mtb'
+    ? nomW_mm
+    : nomW_mm + (S.iw - iwRef) * 0.3;
+
+  // Base
+  const pR_base = cfg.K * Math.pow(total, 0.685) / Math.pow(effW, 0.585);
+
+  // Adj sistema
+  const sysAdj = S.system === 'tubeless' ? cfg.tubelessAdj : 0;
+
+  // Adj terreno
+  const surf = cfg.surfaces.find(s => s.id === S.surface);
+  const terrAdj = surf ? surf.adj : 0;
+
+  // Adj lluvia
+  const wetAdj = S.wet === 'wet' ? -3 : 0;
+
+  // Total
+  let pR = pR_base + sysAdj + terrAdj + wetAdj;
+  let pF = pR_base * cfg.frontRatio + sysAdj + terrAdj + wetAdj;
+
+  // Hookless cap
+  let hookWarn = false;
+  if (S.hook === 'hookless') {
+    if (pF > cfg.hooklessMax || pR > cfg.hooklessMax) hookWarn = true;
+    pF = Math.min(pF, cfg.hooklessMax);
+    pR = Math.min(pR, cfg.hooklessMax);
+  }
+
+  pF = Math.max(cfg.minPsi, pF);
+  pR = Math.max(cfg.minPsi, pR);
+
+  return { total, effW, nomW_mm, pF, pR, pR_base, sysAdj, terrAdj, wetAdj, hookWarn };
+}
+
+// ── GAUGE ─────────────────────────────────────────────────────────
+function setGauge(psi) {
+  const cfg = BIKES[S.bikeType];
+  const pct = Math.max(0, Math.min(1, (psi - cfg.gaugeMin) / (cfg.gaugeMax - cfg.gaugeMin)));
+  document.getElementById('gneedle').style.transform = `rotate(${-90+pct*180}deg)`;
+  document.getElementById('garc').style.strokeDashoffset = 173 - pct*173;
+}
+
+// ── FORMAT ────────────────────────────────────────────────────────
+function fmtMain(psi) { return S.unit==='psi' ? Math.round(psi).toString() : (psi*0.0689476).toFixed(2); }
+function fmtAlt(psi)  { return S.unit==='psi' ? (psi*0.0689476).toFixed(2)+' bar' : Math.round(psi)+' PSI'; }
+function sign(n,d=1)  { return (n>=0?'+':'')+n.toFixed(d); }
+
+// ── RENDER ────────────────────────────────────────────────────────
+function update() {
+  const cfg = BIKES[S.bikeType];
+  const r = calcPressure();
+  setGauge(r.pR);
+
+  ['F','R'].forEach(w => {
+    const psi = w==='F' ? r.pF : r.pR;
+    const el = document.getElementById('val'+w);
+    el.textContent = fmtMain(psi); el.classList.remove('empty');
+    document.getElementById('alt'+w).textContent  = fmtAlt(psi);
+    document.getElementById('unit'+w).textContent = S.unit==='psi' ? 'PSI' : 'BAR';
+    document.getElementById('box'+w).classList.add('on');
+  });
+
+  // meta
+  document.getElementById('mTotal').textContent = r.total.toFixed(1)+' kg';
+  const effLabel = S.bikeType === 'mtb'
+    ? (r.nomW_mm/25.4).toFixed(2)+'" ('+r.nomW_mm.toFixed(0)+'mm)'
+    : r.effW.toFixed(1)+' mm montado';
+  document.getElementById('mEff').textContent   = effLabel;
+  document.getElementById('mDelta').textContent = (r.pR-r.pF).toFixed(1)+' PSI';
+
+  // tabla
+  document.getElementById('dBase').textContent = r.pR_base.toFixed(1)+' PSI / '+(r.pR_base*0.0689).toFixed(2)+' bar';
+  const nomLabel = S.bikeType === 'mtb'
+    ? S.tireW+'" → '+r.nomW_mm.toFixed(0)+'mm'
+    : S.tireW+'mm nominal → '+r.effW.toFixed(1)+'mm (IW '+S.iw+'mm)';
+  document.getElementById('dEffW').textContent = nomLabel;
+  document.getElementById('dSys').textContent  = sign(r.sysAdj)+' PSI ('+(S.system==='tubeless'?'Tubeless':'Cámara')+')';
+  document.getElementById('dTerr').textContent = sign(r.terrAdj)+' PSI';
+  document.getElementById('dWetV').textContent = sign(r.wetAdj)+' PSI';
+  document.getElementById('dDelta').textContent = '−'+(r.pR - r.pF).toFixed(1)+' PSI del. vs tras.';
+
+  // alert
+  const ab=document.getElementById('alertBox'), at=document.getElementById('alertTxt');
+  if (r.hookWarn) {
+    ab.className='alert danger';
+    at.textContent='⛔ Límite hookless activo: máx. 72.5 PSI / 5 bar (ETRTO). Verifica compatibilidad llanta-cubierta.';
+  } else if (r.pF < cfg.minPsi+3 || r.pR < cfg.minPsi+3) {
+    ab.className='alert warn';
+    at.textContent='⚠️ Presión muy baja. Riesgo de pellizco o burp tubeless. Considera cubierta más estrecha.';
+  } else if (S.wet==='wet') {
+    ab.className='alert warn';
+    at.textContent='🌧️ Mojado: −3 PSI para maximizar contacto y tracción, especialmente en curva.';
+  } else if (S.bikeType==='mtb' && S.surface==='enduro') {
+    ab.className='alert info';
+    at.textContent='🤘 Enduro/DH: presión baja para máximo agarre. Considera insertos (CushCore, Tannus) para proteger el aro.';
+  } else if (S.bikeType==='gravel' && S.surface==='road') {
+    ab.className='alert info';
+    at.textContent='🛣️ Gravel en asfalto: +4 PSI vs. gravel seco. Aumenta la eficiencia de rodadura.';
+  } else if (S.hook==='hookless') {
+    ab.className='alert info';
+    at.textContent='✅ Hookless + Tubeless. Límite de seguridad aplicado. No superes 5 bar / 72.5 PSI.';
+  } else {
+    ab.className='alert info';
+    at.textContent=`✅ ${cfg.label}: presión calculada con modelo Vittoria/SILCA. Ajusta ±2–3 PSI según sensación.`;
+  }
+}
+
+// ── ARRANQUE ──────────────────────────────────────────────────────
+setBike('road');
+</script>
+</body>
+</html>
